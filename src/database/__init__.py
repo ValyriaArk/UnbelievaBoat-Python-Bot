@@ -73,9 +73,9 @@ class pythonboat_database_handler:
 			temp_json_content = json.load(temp_json_opening)
 			# the currency symbol is always at position 0 in the "symbols" part
 			currency_symbol = temp_json_content["symbols"][0]["symbol_emoji"]
-			#self.currency_symbol = discord.utils.get(self.client.emojis, name=currency_symbol)
+			self.currency_symbol = discord.utils.get(self.client.emojis, name=currency_symbol)
 			# perhaps currency symbol is too difficult for regular admins to handle, so ill disable it as default.
-			self.currency_symbol = "💰"
+			# self.currency_symbol = "💰"
 		else:
 			try:
 				self.currency_symbol = discord.utils.get(self.client.emojis, name=value)
@@ -1875,7 +1875,7 @@ class pythonboat_database_handler:
 				current += 1
 				try:
 					# print(current, max_items)
-					catalog_report += f"Item {i}: {items[i]['display_name']}\n      price: {self.currency_symbol} {items[i]['price']};　short name <{items[i]['name']}>\n\n"
+					catalog_report += f"Item {i}: {items[i]['display_name']}\n      price: self.currency_symbol {items[i]['price']};　short name {items[i]['name']}\n\n"
 					if current >= max_items:
 						# catalog_report += "\n```\n*For details about an item: use* `catalog <item short name>`"
 						catalog_report += "\n```"
