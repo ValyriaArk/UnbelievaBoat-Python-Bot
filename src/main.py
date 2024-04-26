@@ -39,7 +39,7 @@ import requests, asyncio
 
 # init discord stuff and json handling
 BOT_PREFIX = ("+")  # tupple in case we'd need multiple
-token = "putyourtokenhere"  # add your own token
+token = ""  # add your own token
 # emojis
 emoji_worked = "✅"
 emoji_error = "❌"
@@ -225,7 +225,7 @@ async def on_message(message):
 	# some stuff will be only for staff, which will be recognizable by the botmaster role
 	staff_request = 0
 	for role_to_check in message.author.roles:
-		if role_to_check.name == "botmaster": staff_request = 1
+		if role_to_check.name == "Admin Alert": staff_request = 1
 	print("staff status : ", staff_request)
 	command = command[0]
 
@@ -249,11 +249,8 @@ async def on_message(message):
 	all_reg_commands_aliases = {
 		"blackjack" : "bj",
 		"roulette"  : "",
-		"slut": "",
-		"crime": "",
-		"work": "",
-		"rob": "steal",
 		"balance": "bal",
+		"collect": "",
 		"deposit": "dep",
 		"withdraw": "with",
 		"give": "pay",
@@ -288,6 +285,12 @@ async def on_message(message):
 				bet = "".join(newAmount)
 				bet = int(bet)
 				if bet < 100:
+					color = discord_error_rgb_code
+					embed = discord.Embed(description=f"{emoji_error}  Invalid `<amount or all>` argument given. Bet must be at least 100.\n", color=color)
+					embed.set_author(name=username, icon_url=user_pfp)
+					await channel.send(embed=embed)
+					return
+				if bet > 10000:
 					color = discord_error_rgb_code
 					embed = discord.Embed(description=f"{emoji_error}  Invalid `<amount or all>` argument given. Bet must be at least 100.\n", color=color)
 					embed.set_author(name=username, icon_url=user_pfp)
@@ -350,6 +353,12 @@ async def on_message(message):
 					embed.set_author(name=username, icon_url=user_pfp)
 					await channel.send(embed=embed)
 					return
+				if bet > 10000:
+					color = discord_error_rgb_code
+					embed = discord.Embed(description=f"{emoji_error}  Invalid `<amount or all>` argument given. Bet must be at least 100.\n", color=color)
+					embed.set_author(name=username, icon_url=user_pfp)
+					await channel.send(embed=embed)
+					return
 			except:
 				color = discord_error_rgb_code
 				embed = discord.Embed(description=f"{emoji_error}  Invalid `<amount or all>` argument given.\n\nUsage:\n`roulette <amount or all> <space>`", color=color)
@@ -396,91 +405,6 @@ async def on_message(message):
 		# print("finished func")
 		not_done = False
 		return
-
-	# --------------
-	# 	  SLUT
-	# --------------
-
-	elif command in ["slut", all_reg_commands_aliases["slut"]]:  # no alias
-		try:
-			status, slut_return = await db_handler.slut(user, channel, username, user_pfp)
-
-			if status == "error":
-				color = discord_error_rgb_code
-				embed = discord.Embed(description=f"{slut_return}", color=color)
-				embed.set_author(name=username, icon_url=user_pfp)
-				await channel.send(embed=embed)
-				return
-		except Exception as e:
-			print(e)
-			await send_error(channel)
-
-	# --------------
-	# 	  CRIME
-	# --------------
-
-	elif command in ["crime", all_reg_commands_aliases["crime"]]:  # no alias
-		try:
-			status, crime_return = await db_handler.crime(user, channel, username, user_pfp)
-
-			if status == "error":
-				color = discord_error_rgb_code
-				embed = discord.Embed(description=f"{crime_return}", color=color)
-				embed.set_author(name=username, icon_url=user_pfp)
-				await channel.send(embed=embed)
-				return
-		except Exception as e:
-			print(e)
-			await send_error(channel)
-
-	# --------------
-	# 	  WORK
-	# --------------
-
-	elif command in ["work", all_reg_commands_aliases["work"]]:  # no alias
-		try:
-			status, work_return = await db_handler.work(user, channel, username, user_pfp)
-
-			if status == "error":
-				color = discord_error_rgb_code
-				embed = discord.Embed(description=f"{work_return}", color=color)
-				embed.set_author(name=username, icon_url=user_pfp)
-				await channel.send(embed=embed)
-				return
-
-		except Exception as e:
-			print(e)
-			await send_error(channel)
-
-
-
-	# --------------
-	# 	  ROB
-	# --------------
-
-	elif command in ["rob", all_reg_commands_aliases["rob"]]:  # no alias
-		# you gotta rob someone
-		if "none" in param[1] or param[2] != "none": # we only one param
-			color = discord_error_rgb_code
-			embed = discord.Embed(description=f"{emoji_error}  Too few arguments given.\n\nUsage:\n`rob <user>`", color=color)
-			embed.set_author(name=username, icon_url=user_pfp)
-			await channel.send(embed=embed)
-			return
-
-		user_to_rob = await get_user_id(param)
-
-		try:
-			status, rob_return = await db_handler.rob(user, channel, username, user_pfp, user_to_rob)
-
-			if status == "error":
-				color = discord_error_rgb_code
-				embed = discord.Embed(description=f"{rob_return}", color=color)
-				embed.set_author(name=username, icon_url=user_pfp)
-				await channel.send(embed=embed)
-				return
-		except Exception as e:
-			print(e)
-			await send_error(channel)
 
 	# --------------
 	#    BALANCE
@@ -797,68 +721,61 @@ async def on_message(message):
 	elif command in ["help", all_reg_commands_aliases["help"]]:
 		color = discord.Color.from_rgb(3, 169, 244)
 		embed = discord.Embed(title=f"Help System", color=color)
-		embed.add_field(name="stats", value=f"Usage: `stats`", inline=False)
 
 		embed.add_field(name=all_reg_commands[0], value=f"Alias: {all_reg_commands_aliases[all_reg_commands[0]]}  |  "
-														f"Usage: `blackjack <amount or all>`", inline=False)
+														f"Usage: `blackjack <bet>`", inline=False)
 		embed.add_field(name=all_reg_commands[1], value=f"Alias: {all_reg_commands_aliases[all_reg_commands[1]]}  |  "
-														f"Usage: `roulette <amount or all> <space>`", inline=False)
+														f"Usage: `roulette <bet> <space>`", inline=False)
 		embed.add_field(name=all_reg_commands[2], value=f"Alias: {all_reg_commands_aliases[all_reg_commands[2]]}  |  "
-												f"Usage: `slut`", inline=False)
-		embed.add_field(name=all_reg_commands[3], value=f"Alias: {all_reg_commands_aliases[all_reg_commands[3]]}  |  "
-												f"Usage: `crime`", inline=False)
-		embed.add_field(name=all_reg_commands[4], value=f"Alias: {all_reg_commands_aliases[all_reg_commands[4]]}  |  "
-												f"Usage: `work`", inline=False)
-		embed.add_field(name=all_reg_commands[5], value=f"Alias: {all_reg_commands_aliases[all_reg_commands[5]]}  |  "
-													f"Usage: `rob`", inline=False)
-		embed.add_field(name=all_reg_commands[6], value=f"Alias: {all_reg_commands_aliases[all_reg_commands[6]]}  |  "
 													f"Usage: `balance`", inline=False)
-		embed.add_field(name=all_reg_commands[7], value=f"Alias: {all_reg_commands_aliases[all_reg_commands[7]]}  |  "
+		embed.add_field(name=all_reg_commands[3], value=f"Alias: {all_reg_commands_aliases[all_reg_commands[3]]}  |  "
+													f"Usage: `collect` - collect daily income", inline=False)
+		embed.add_field(name=all_reg_commands[4], value=f"Alias: {all_reg_commands_aliases[all_reg_commands[4]]}  |  "
 													f"Usage: `deposit <amount>`", inline=False)
-		embed.add_field(name=all_reg_commands[8], value=f"Alias: {all_reg_commands_aliases[all_reg_commands[8]]}  |  "
+		embed.add_field(name=all_reg_commands[5], value=f"Alias: {all_reg_commands_aliases[all_reg_commands[5]]}  |  "
 													f"Usage: `withdraw <amount>`", inline=False)
-		embed.add_field(name=all_reg_commands[9], value=f"Alias: {all_reg_commands_aliases[all_reg_commands[9]]}  |  "
+		embed.add_field(name="catalog", value=f"Usage: `catalog [item short name]`", inline=False)
+		embed.add_field(name="buy-item", value=f"Usage: `buy-item <item short name> <amount>`", inline=False)
+		embed.add_field(name="give-item", value=f"Usage: `give-item <member> <item short name> <amount>`", inline=False)
+		embed.add_field(name="inventory", value=f"Usage: `inventory [page]`", inline=False)
+		embed.add_field(name=all_reg_commands[6], value=f"Alias: {all_reg_commands_aliases[all_reg_commands[6]]}  |  "
 												f"Usage: `give <member> <amount or all>`", inline=False)
-		embed.add_field(name=all_reg_commands[10], value=f"Alias: {all_reg_commands_aliases[all_reg_commands[10]]}  |  "
+		embed.add_field(name=all_reg_commands[7], value=f"Alias: {all_reg_commands_aliases[all_reg_commands[7]]}  |  "
 													f"Usage: `leaderboard [page] [-cash | -bank | -total]`", inline=False)
-		embed.add_field(name=all_reg_commands[11], value=f"Alias: {all_reg_commands_aliases[all_reg_commands[11]]}  |  "
+		embed.add_field(name=all_reg_commands[8], value=f"Alias: {all_reg_commands_aliases[all_reg_commands[8]]}  |  "
 													f"Usage: `help` - shows this", inline=False)
-		embed.add_field(name=all_reg_commands[12], value=f"Alias: {all_reg_commands_aliases[all_reg_commands[12]]}  |  "
-													f"Usage: `module <module, e.g. slut>`", inline=False)
 		# edit stuff
-		embed.set_footer(text="For more info, contact an admin or <kendrik2.0>")
+		embed.set_footer(text="For more info, contact an admin")
 		await channel.send(embed=embed)
 
-		#### in 2 parts because one was too long
-
+	# --------------
+	#     STAFF HELP
+	# --------------
+	
+	elif command == "staff-help":
+		color = discord.Color.from_rgb(3, 169, 244)
 		embed = discord.Embed(title=f"Help System", color=color)
 		embed.add_field(name="----------------------\n\nSTAFF ONLY", value=f"requires <botmaster> role", inline=False)
 		embed.add_field(name="add-money", value=f"Usage: `add-money <member> <amount>`", inline=False)
-		embed.add_field(name="remove-money", value=f"Usage: `remove-money <member> <amount> [cash/bank]`", inline=False)
+		embed.add_field(name="remove-money", value=f"Usage: `remove-money <member> <amount>`", inline=False)
 		embed.add_field(name="remove-money-role", value=f"Usage: `remove-money-role <role> <amount>`", inline=False)
 		embed.add_field(name="change", value=f"Usage: `change <module> <variable> <new value>`", inline=False)
 		embed.add_field(name="change-currency", value=f"Usage: `change-currency <new emoji name>`", inline=False)
 		embed.add_field(name="set-income-reset", value=f"Usage: `set-income-reset <false/true>`", inline=False)
-		embed.add_field(name="remove-user-item", value=f"Usage: `remove-user-item <member> <item short name> <amount>`", inline=False)
-		embed.add_field(name="spawn-item", value=f"Usage: `spawn-item <player pinged> <item short name> [amount]`", inline=False)
 		embed.add_field(name="clean-leaderboard", value=f"Usage: `clean-leaderboard` - remove gone users", inline=False)
 		embed.add_field(name="----------------------\n\nITEM HANDLING", value=f"create and delete requires <botmaster> role", inline=False)
 		embed.add_field(name="create-item", value=f"Usage: `create-item`", inline=False)
 		embed.add_field(name="delete-item", value=f"Usage: `delete-item <item short name>`", inline=False)
-		embed.add_field(name="buy-item", value=f"Usage: `buy-item <item short name> <amount>`", inline=False)
-		embed.add_field(name="give-item", value=f"Usage: `give-item <member> <item short name> <amount>`", inline=False)
+		embed.add_field(name="spawn-item", value=f"Usage: `spawn-item <player pinged> <item short name> [amount]`", inline=False)
+		embed.add_field(name="remove-user-item", value=f"Usage: `remove-user-item <member> <item short name> <amount>`", inline=False)
 		embed.add_field(name="use", value=f"Usage: `use <item short name> <amount>`", inline=False)
-		embed.add_field(name="inventory", value=f"Usage: `inventory [page]`", inline=False)
 		embed.add_field(name="user-inventory", value=f"Usage: `user-inventory <member> [page]`", inline=False)
-		embed.add_field(name="catalog", value=f"Usage: `catalog [item short name]`", inline=False)
 		embed.add_field(name="----------------------\n\nINCOME ROLES", value=f"create, delete and update requires <botmaster> role", inline=False)
 		embed.add_field(name="add-income-role", value=f"Usage: `add-income-role <role pinged> <income>`", inline=False)
 		embed.add_field(name="remove-income-role", value=f"Usage: `remove-income-role <role pinged>`", inline=False)
 		embed.add_field(name="list-roles", value=f"Usage: `list-roles`", inline=False)
-		embed.add_field(name="collect", value=f"Usage: `collect` | get your salary. If you choose to use update-income, please disable this command.", inline=False)
-		embed.add_field(name="update-income", value=f"Usage: `update-income` | income works DAILY! automatically updates ALL INCOMES time elapsed * income.", inline=False)
 		# edit stuff
-		embed.set_footer(text="For more info, contact an admin or <kendrik2.0>")
+		embed.set_footer(text="For more info, contact an admin")
 
 		await channel.send(embed=embed)
 
@@ -1355,7 +1272,7 @@ async def on_message(message):
 						await channel.send(f"{emoji_error}  Invalid stock amount given. Please try again or type cancel to exit.")
 						continue
 				except:
-					if user_input.lower() == "skip" or user_input.lower() == "infinity":
+					if user_input == "skip" or user_input == "infinity":
 						stock = "unlimited"
 					else:
 						await channel.send(f"{emoji_error}  Invalid stock amount given. Please try again or type cancel to exit.")
@@ -1375,7 +1292,7 @@ async def on_message(message):
 						await channel.send(f"{emoji_error}  Invalid max amount given. Please try again or type cancel to exit.")
 						continue
 				except:
-					if user_input.lower() == "skip" or user_input.lower() == "infinity":
+					if user_input == "skip" or user_input == "infinity":
 						max_amount = "unlimited"
 					else:
 						await channel.send(f"{emoji_error}  Invalid max amount given. Please try again or type cancel to exit.")
@@ -2419,38 +2336,6 @@ async def on_message(message):
 			print(e)
 			await send_error(channel)
 		return
-
-	# ---------------------------
-	#   UPDATE INCOMES
-	# ---------------------------
-
-	elif command in ["update-income"]:
-		if not staff_request:
-			color = discord_error_rgb_code
-			embed = discord.Embed(description=f"🔒 Requires botmaster role", color=color)
-			embed.set_author(name=username, icon_url=user_pfp)
-			await channel.send(embed=embed)
-			return
-
-		try:
-			status, update_incomes_return = await db_handler.update_incomes(user, channel, username, user_pfp, server)
-			if status == "error":
-				color = discord_error_rgb_code
-				embed = discord.Embed(description=f"{update_incomes_return}", color=color)
-				embed.set_author(name=username, icon_url=user_pfp)
-				await channel.send(embed=embed)
-				return
-		except Exception as e:
-			print(e)
-			await send_error(channel)
-
-		color = discord.Color.from_rgb(102, 187, 106)  # green
-		embed = discord.Embed(description=f"{emoji_worked}  Users with registered roles have received their income (into bank account).", color=color)
-		embed.set_author(name=username, icon_url=user_pfp)
-		await channel.send(embed=embed)
-
-		return
-
 
 	# ---------------------------
 	#   UPDATE INCOME FOR YOURSELF ONLY
